@@ -14,20 +14,20 @@ class Bert_classifier(torch.nn.Module):
         output = self.dense(output_2)
         return output
 
-def train(nb_epochs, train_loader, device, model):
+def train(nb_epochs, train_loader, device, model, optimizer):
     model.train()
     for e in range(nb_epochs):
-    print(f'Number of epochs: {e}')
-    for _, data in enumerate(train_loader, 0):
-        ids = data['ids'].to(device, dtype = torch.long)
-        mask = data['mask'].to(device, dtype = torch.long)
-        token_type_ids = data['token_type_ids'].to(device, dtype = torch.long)
-        targets = data['targets'].to(device, dtype = torch.float)
-        outputs = model(ids, mask, token_type_ids)
-        optimizer.zero_grad()
-        loss = torch.nn.BCEWithLogitsLoss()(outputs, targets)
-        if _%5000==0:
-            print(f'Epoch: {e}, Loss:  {loss.item()}')
-        optimizer.zero_grad()
-        loss.backward()
-        optimizer.step()
+        print(f'Number of epochs: {e}')
+        for _, data in enumerate(train_loader, 0):
+            ids = data['ids'].to(device, dtype = torch.long)
+            mask = data['mask'].to(device, dtype = torch.long)
+            token_type_ids = data['token_type_ids'].to(device, dtype = torch.long)
+            targets = data['targets'].to(device, dtype = torch.float)
+            outputs = model(ids, mask, token_type_ids)
+            optimizer.zero_grad()
+            loss = torch.nn.BCEWithLogitsLoss()(outputs, targets)
+            if _%5000==0:
+                print(f'Epoch: {e}, Loss:  {loss.item()}')
+            optimizer.zero_grad()
+            loss.backward()
+            optimizer.step()
