@@ -7,7 +7,7 @@ class Labels:
         self.y_path = y_path
 
     def load(self):
-        self.labels = pd.read_csv(self.y_path, indox_col=0)
+        self.labels = pd.read_csv(self.y_path, index_col=0)
         self.labels = self.labels['color_tags'.apply(self.str_to_list)]
         self.onehot_labels = self.mlb.fit_transform(self.labels)
         self.classes_correp = self.mlb.classes_
