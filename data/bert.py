@@ -10,10 +10,10 @@ class Bert_dataset(Dataset):
       self.labels_obj = Labels(data_path + y_path)
       self.tokenizer = BertTokenizer.from_pretrained('cl-tohoku/bert-base-japanese')
       self.max_len = max_len
-      self.load_datasets(X_path, y_path)
+      self.load_datasets(data_path, X_path, y_path)
       self.remove_empty_description()
 
-    def load_datasets(self, X_path, y_path):
+    def load_datasets(self, data_path, X_path, y_path):
       self.sentences = pd.read_csv(data_path + X_path)['item_caption']
       self.labels, self.one_hot_labels, self.classes = self.labels_obj.load()
 
@@ -22,6 +22,9 @@ class Bert_dataset(Dataset):
       self.sentences = self.sentences[correct_descriptions].values
       self.labels = self.labels[correct_descriptions, :]
       self.one_hot_labels = self.one_hot_labels[correct_descriptions, :]
+
+    def get_nb_classes(self):
+      return len(self.classes)
 
     def __len__(self):
         return len(self.sentences)
