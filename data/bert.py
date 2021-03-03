@@ -20,7 +20,6 @@ class Bert_dataset(Dataset):
     def remove_empty_description(self):
       correct_descriptions = self.sentences.notna()
       self.sentences = self.sentences[correct_descriptions].values
-      self.labels = self.labels[correct_descriptions, :]
       self.one_hot_labels = self.one_hot_labels[correct_descriptions, :]
 
     def get_nb_classes(self):
