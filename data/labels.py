@@ -1,7 +1,7 @@
 import pandas as pd
 from sklearn.preprocessing import MultiLabelBinarizer
 
-class Labels():
+class Labels:
     def __init__(self,y_path):
         self.mlb = MultiLabelBinarizer()
         self.y_path = y_path

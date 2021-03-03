@@ -1,6 +1,6 @@
 from torch.utils.data import Dataset, DataLoader
 from transformers import BertTokenizer
-from labels import Labels
+from data.labels import Labels
 import pandas as pd
 import numpy as np 
 import torch
