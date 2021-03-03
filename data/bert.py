@@ -51,8 +51,9 @@ class Bert_dataset(Dataset):
       None,
       add_special_tokens=True,
       max_length=self.max_len,
-      padding=True,
-      return_token_type_ids=True)
+      pad_to_max_length=True,
+      return_token_type_ids=True,
+      truncation=True)
     ids = inputs['input_ids']
     mask = inputs['attention_mask']
     token_type_ids = inputs["token_type_ids"]
