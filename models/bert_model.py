@@ -15,11 +15,11 @@ class Bert_classifier(torch.nn.Module):
         output = self.dense(output_2)
         return output
 
-def train(nb_epochs, train_loader, device, model, optimizer):
+def train(nb_epochs, train_loader, val_loader, device, model, optimizer, model_path):
     model.train()
     for e in range(nb_epochs):
         print(f'Number of epochs: {e}')
-        for _, data in enumerate(tqdm(train_loader)):
+        for data in tqdm(train_loader):
             ids = data['ids'].to(device, dtype = torch.long)
             mask = data['mask'].to(device, dtype = torch.long)
             token_type_ids = data['token_type_ids'].to(device, dtype = torch.long)
@@ -28,7 +28,23 @@ def train(nb_epochs, train_loader, device, model, optimizer):
             optimizer.zero_grad()
             loss = torch.nn.BCEWithLogitsLoss()(outputs, targets)
             if _%5000==0:
-                print(f'Epoch: {e}, Loss:  {loss.item()}')
+                validation_loss = evaluate()
+                print(f'Epoch: {e}, Training Loss:  {loss.item()}')
+                print(f'Epoch: {e}, Validation Loss:  {validation_loss.item()}')
             optimizer.zero_grad()
             loss.backward()
             optimizer.step()
+    torch.save(model, model_path)
+
+def evaluate(val_dataloader):
+    losses = []
+    with torch.no_grad(): 
+        for data in val_dataloader:
+            ids = data['ids'].to(device, dtype = torch.long)
+            mask = data['mask'].to(device, dtype = torch.long)
+            token_type_ids = data['token_type_ids'].to(device, dtype = torch.long)
+            targets = data['targets'].to(device, dtype = torch.float)
+            outputs = model(ids, mask, token_type_ids)
+            optimizer.zero_grad()
+            losses.append(torch.nn.BCEWithLogitsLoss()(outputs, targets).item())
+    return np.mean(losses)
