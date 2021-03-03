@@ -26,3 +26,22 @@ class ImageDataset(Dataset):
         return torch.FloatTensor(image), torch.FloatTensor(label)
     def __len__(self):
         return len(self.paths)
+
+class TestImageDataset(Dataset):
+    def __init__(self, image_paths, image_folder, transform=None):
+        self.paths = image_paths
+        self.image_folder = image_folder
+        self.transform = transform
+    def __getitem__(self, idx):
+        im_name = self.paths.iloc[idx]
+        im = Image.open(self.image_folder+im_name)
+        if(im_name.split('.')[-1]=='gif'):
+            image = ImageSequence.Iterator(im)[0].convert('RGB')
+        else:
+            image = im.convert('RGB')
+        if self.transform:
+            image = self.transform(image)
+        return idx, torch.FloatTensor(image)
+    def __len__(self):
+        return len(self.paths)
+
