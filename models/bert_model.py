@@ -1,6 +1,7 @@
 from transformers import BertModel
 import torch
 from tqdm import tqdm
+import numpy as np
 
 class Bert_classifier(torch.nn.Module):
     def __init__(self, nb_colors):
@@ -19,7 +20,7 @@ def train(nb_epochs, train_loader, val_loader, device, model, optimizer, model_p
     model.train()
     for e in range(nb_epochs):
         print(f'Number of epochs: {e}')
-        for data in tqdm(train_loader):
+        for i, data in enumerate(tqdm(train_loader)):
             ids = data['ids'].to(device, dtype = torch.long)
             mask = data['mask'].to(device, dtype = torch.long)
             token_type_ids = data['token_type_ids'].to(device, dtype = torch.long)
@@ -27,8 +28,8 @@ def train(nb_epochs, train_loader, val_loader, device, model, optimizer, model_p
             outputs = model(ids, mask, token_type_ids)
             optimizer.zero_grad()
             loss = torch.nn.BCEWithLogitsLoss()(outputs, targets)
-            if _%5000==0:
-                validation_loss = evaluate()
+            if i%5000==0:
+                validation_loss = evaluate(val_loader, model, device)
                 print(f'Epoch: {e}, Training Loss:  {loss.item()}')
                 print(f'Epoch: {e}, Validation Loss:  {validation_loss.item()}')
             optimizer.zero_grad()
@@ -36,15 +37,14 @@ def train(nb_epochs, train_loader, val_loader, device, model, optimizer, model_p
             optimizer.step()
     torch.save(model, model_path)
 
-def evaluate(val_dataloader):
+def evaluate(val_loader, model, device):
     losses = []
     with torch.no_grad(): 
-        for data in val_dataloader:
+        for data in val_loader:
             ids = data['ids'].to(device, dtype = torch.long)
             mask = data['mask'].to(device, dtype = torch.long)
             token_type_ids = data['token_type_ids'].to(device, dtype = torch.long)
             targets = data['targets'].to(device, dtype = torch.float)
             outputs = model(ids, mask, token_type_ids)
-            optimizer.zero_grad()
             losses.append(torch.nn.BCEWithLogitsLoss()(outputs, targets).item())
     return np.mean(losses)
