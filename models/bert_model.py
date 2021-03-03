@@ -1,5 +1,6 @@
 from transformers import BertModel
 import torch
+from tqdm import tqdm
 
 class Bert_classifier(torch.nn.Module):
     def __init__(self, nb_colors):
@@ -18,7 +19,7 @@ def train(nb_epochs, train_loader, device, model, optimizer):
     model.train()
     for e in range(nb_epochs):
         print(f'Number of epochs: {e}')
-        for _, data in enumerate(train_loader, 0):
+        for _, data in enumerate(tqdm(train_loader)):
             ids = data['ids'].to(device, dtype = torch.long)
             mask = data['mask'].to(device, dtype = torch.long)
             token_type_ids = data['token_type_ids'].to(device, dtype = torch.long)
