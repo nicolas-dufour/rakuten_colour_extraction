@@ -33,9 +33,9 @@ class Bert_dataset(Dataset):
     text_title = "<title> " + titles[unique_title] + '. <description> ' 
     text_description = "<title> . <description> " +sentences[unique_description]
     X['text'] = np.nan
-    X['text'][unique_description] = text_description
-    X['text'][unique_title] = text_title
-    X['text'][both] = text_both
+    X['text'].loc[unique_description] = text_description
+    X['text'].loc[unique_title] = text_title
+    X['text'].loc[both] = text_both
     return X['text']
 
   def get_nb_classes(self):
