@@ -14,22 +14,42 @@ class Bert_dataset(Dataset):
       self.remove_empty_description()
 
     def load_datasets(self, data_path, X_path, y_path):
-      self.sentences = pd.read_csv(data_path + X_path)['item_caption']
+      X = pd.read_csv(data_path + X_path)
+      self.texts = self.preprocess_text(X['item_caption'], X['item_name'], X)
       self.labels, self.one_hot_labels, self.classes = self.labels_obj.load()
 
     def remove_empty_description(self):
-      correct_descriptions = self.sentences.notna()
-      self.sentences = self.sentences[correct_descriptions].values
-      self.one_hot_labels = self.one_hot_labels[correct_descriptions, :]
+      correct_texts = self.texts.notna()
+      self.texts = self.texts[correct_texts].values
+      self.one_hot_labels = self.one_hot_labels[correct_texts, :]
+
+    def preprocess_text(self, sentences, titles, X):
+      correct_descriptions = sentences.notna()
+      correct_titles = titles.notna()
+
+      unique_description = np.logical_and(correct_descriptions, correct_titles == False)
+      unique_title = np.logical_and(correct_descriptions == False, correct_titles)
+      both = np.logical_and(correct_descriptions, correct_titles)
+
+      text_both = "<title> " + titles[both] + '. <description> ' + sentences[both]
+      text_title = "<title> " + titles[unique_title] + '. <description> ' 
+      text_description = "<title> . <description> " +sentences[unique_description]
+
+      X['text'] = np.nan
+      X['text'][unique_description] = text_description
+      X['text'][unique_title] = text_title
+      X['text'][both] = text_both
+
+      return X['text']
 
     def get_nb_classes(self):
       return len(self.classes)
 
     def __len__(self):
-        return len(self.sentences)
+        return len(self.texts)
 
     def __getitem__(self, idx):
-        sentence = self.sentences[idx]
+        sentence = self.texts[idx]
         inputs = self.tokenizer.encode_plus(
             sentence,
             None,
