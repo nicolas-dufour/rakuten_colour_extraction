@@ -28,7 +28,7 @@ def train(nb_epochs, train_loader, val_loader, device, model, optimizer, model_p
             outputs = model(ids, mask, token_type_ids)
             optimizer.zero_grad()
             loss = torch.nn.BCEWithLogitsLoss()(outputs, targets)
-            if i%5000==0:
+            if i%50==0:
                 validation_loss = evaluate(val_loader, model, device)
                 print(f'Epoch: {e}, Training Loss:  {loss.item()}')
                 print(f'Epoch: {e}, Validation Loss:  {validation_loss.item()}')
