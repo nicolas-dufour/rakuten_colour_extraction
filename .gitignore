@@ -3,3 +3,4 @@ lightning_logs
 data_files
 lightning_logs
 wandb
+data_files
