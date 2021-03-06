@@ -177,7 +177,6 @@ class Deit(pl.LightningModule):
         return main, dist
     
     def get_probas(self, x):
-        def forward(self, x):
         if self.training:
             x, _ = self.backbone(x)
         else:
