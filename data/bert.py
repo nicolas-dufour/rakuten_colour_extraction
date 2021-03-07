@@ -83,7 +83,8 @@ class Bert_dataset(Dataset):
                                         None,
                                         add_special_tokens=True,
                                         max_length=self.max_len,
-                                        padding=False,
+                                        truncation=True,
+                                        padding='do_not_pad',
                                         return_token_type_ids=True,
                                         return_attention_mask=True,
                                         return_overflowing_tokens=False,
@@ -104,10 +105,11 @@ class Bert_dataset(Dataset):
     return self.encode(batch)
 
 def collate_batch(batch):
-    ids = pad_sequence([torch.tensor(data.ids) for data in batch], 0).type(torch.long)
-    mask = pad_sequence([torch.tensor(data.mask) for data in batch], 0).type(torch.long)
-    token_type = pad_sequence([torch.tensor(data.token_type_ids) for data in batch], 0).type(torch.long)
+    ids = pad_sequence([torch.tensor(data.ids) for data in batch], True, 0).type(torch.long)
+    mask = pad_sequence([torch.tensor(data.mask) for data in batch], True, 0).type(torch.long)
+    token_type = pad_sequence([torch.tensor(data.token_type_ids) for data in batch], True, 0).type(torch.long)
     targets = torch.tensor([b.target for b in batch], dtype=torch.long)
+    print(ids.size())
     return {"ids": ids,
             "mask": mask,
             "token_type_ids": token_type,
