@@ -107,7 +107,7 @@ def collate_batch(batch):
     ids = pad_sequence([torch.tensor(data.ids) for data in batch], 0).type(torch.long)
     mask = pad_sequence([torch.tensor(data.mask) for data in batch], 0).type(torch.long)
     token_type = pad_sequence([torch.tensor(data.token_type_ids) for data in batch], 0).type(torch.long)
-    targets = torch.tensor([torch.tensor(b.target, dtype=torch.long) for b in batch], dtype=torch.long)
+    targets = torch.tensor([b.target for b in batch], dtype=torch.long)
     return {"ids": ids,
             "mask": mask,
             "token_type_ids": token_type,
