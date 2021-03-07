@@ -92,19 +92,20 @@ class Bert_dataset(Dataset):
 
 
 class Bert_Data:
-  def __init__(self, data_path, X_path, y_path, batch_size, workers):
+  def __init__(self, data_path, X_path, y_path, batch_size, workers, MAX_LEN):
     self.data_path = data_path
     self.X_path = X_path
     self.y_path = y_path
     self.batch_size = batch_size
     self.workers = workers
+    self.MAX_LEN = MAX_LEN
 
-    def split_dataset(self, dataset):
-      len = dataset.__len__()
-      train_size = int(len*0.8)
-      val_size = int((len - train_size) / 2)
-      test_size = len - train_size - val_size
-      train_dataset, val_dataset, test_dataset = random_split(dataset,[train_size, val_size, test_size])
+  def split_dataset(self, dataset):
+    len = dataset.__len__()
+    train_size = int(len*0.8)
+    val_size = int((len - train_size) / 2)
+    test_size = len - train_size - val_size
+    return random_split(dataset,[train_size, val_size, test_size])
 
   def plot_sizes(self, train, val, test):
     print('[SYSTEM] Train size', train.__len__())
@@ -112,7 +113,7 @@ class Bert_Data:
     print('[SYSTEM]Test size', test.__len__())
 
   def build(self):
-      dataset = Bert_dataset(data_path, X_path, y_path, MAX_LEN)
+      dataset = Bert_dataset(self.data_path, self.X_path, self.y_path, self.MAX_LEN)
       train_dataset, val_dataset, test_dataset = self.split_dataset(dataset)
       self.plot_sizes(train_dataset, val_dataset, test_dataset)
 
@@ -124,4 +125,4 @@ class Bert_Data:
 
       test_loader = DataLoader(test_dataset, batch_size=self.batch_size,
                                shuffle=False, num_workers=self.workers)
-      return train_loader, val_loader, test_loader
+      return train_loader, val_loader, test_loader, dataset.get_nb_classes()
