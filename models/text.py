@@ -18,6 +18,7 @@ class Bert_classifier(torch.nn.Module):
 
 def train(nb_epochs, train_loader, val_loader, device, model, optimizer, model_path):
     model.train()
+    val_loss, train_loss = [], []
     for e in range(nb_epochs):
         print(f'Number of epochs: {e}')
         for i, data in enumerate(tqdm(train_loader)):
@@ -32,10 +33,13 @@ def train(nb_epochs, train_loader, val_loader, device, model, optimizer, model_p
                 validation_loss = evaluate(val_loader, model, device)
                 print(f'Epoch: {e}, Training Loss:  {loss.item()}')
                 print(f'Epoch: {e}, Validation Loss:  {validation_loss.item()}')
+                val_loss.append(validation_loss.item())
+                train_loss.append(loss.item())
             optimizer.zero_grad()
             loss.backward()
             optimizer.step()
     torch.save(model, model_path)
+    return val_loss, train_loss
 
 def evaluate(val_loader, model, device):
     losses = []
