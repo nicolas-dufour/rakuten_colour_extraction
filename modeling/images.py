@@ -172,8 +172,8 @@ class Deit(pl.LightningModule):
             x, _ = self.backbone(x)
         else:
             x= self.backbone(x)
-        main = self.head(main)
-        dist = self.head_dist(main)
+        main = self.head(x)
+        dist = self.head_dist(x)
         return main, dist
     
     def get_probas(self, x):
@@ -181,8 +181,8 @@ class Deit(pl.LightningModule):
             x, _ = self.backbone(x)
         else:
             x= self.backbone(x)
-        main = self.head(main)
-        dist = self.head_dist(main)
+        main = self.head(x)
+        dist = self.head_dist(x)
         return nn.sigmoid(main), nn.sigmoid(dist)
 
     def training_step(self, batch, batch_idx):
@@ -193,7 +193,7 @@ class Deit(pl.LightningModule):
         self.acc_teacher_train(torch.sigmoid(labels_teacher), targets.long())
         self.f1_teacher_train(torch.sigmoid(labels_teacher), targets.long())
 
-        labels_teacher_hard = (labels_teacher>0.5).long()
+        labels_teacher_hard = (labels_teacher>0.5).float()
         loss_student = self.criterium(labels_student, labels_teacher_hard)
 
         self.acc_student_train(torch.sigmoid(labels_student), targets.long())
@@ -222,7 +222,7 @@ class Deit(pl.LightningModule):
         self.acc_teacher_val(torch.sigmoid(labels_teacher), targets.long())
         self.f1_teacher_val(torch.sigmoid(labels_teacher), targets.long())
 
-        labels_teacher_hard = (labels_teacher>0.5).long()
+        labels_teacher_hard = (labels_teacher>0.5).float()
         loss_student = self.criterium(labels_student, labels_teacher_hard)
 
         self.acc_student_val(torch.sigmoid(labels_student), targets.long())
@@ -230,7 +230,7 @@ class Deit(pl.LightningModule):
 
         loss = (loss_teacher + loss_student)/2
 
-        self.log('val_loss', loss, on_epoch=True,on_step=True)
+        self.log('valid_loss', loss, on_epoch=True,on_step=True)
     
     def validation_epoch_end(self, loss):
         self.log('val_acc_teacher', self.acc_teacher_val.compute())
