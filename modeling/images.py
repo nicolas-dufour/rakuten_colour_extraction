@@ -172,8 +172,8 @@ class Deit(pl.LightningModule):
             x, _ = self.backbone(x)
         else:
             x= self.backbone(x)
-        main = self.head(main)
-        dist = self.head_dist(main)
+        main = self.head(x)
+        dist = self.head_dist(x)
         return main, dist
     
     def get_probas(self, x):
@@ -181,8 +181,8 @@ class Deit(pl.LightningModule):
             x, _ = self.backbone(x)
         else:
             x= self.backbone(x)
-        main = self.head(main)
-        dist = self.head_dist(main)
+        main = self.head(x)
+        dist = self.head_dist(x)
         return nn.sigmoid(main), nn.sigmoid(dist)
 
     def training_step(self, batch, batch_idx):
