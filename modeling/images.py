@@ -230,7 +230,7 @@ class Deit(pl.LightningModule):
 
         loss = (loss_teacher + loss_student)/2
 
-        self.log('val_loss', loss, on_epoch=True,on_step=True)
+        self.log('valid_loss', loss, on_epoch=True,on_step=True)
     
     def validation_epoch_end(self, loss):
         self.log('val_acc_teacher', self.acc_teacher_val.compute())
