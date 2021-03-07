@@ -193,7 +193,7 @@ class Deit(pl.LightningModule):
         self.acc_teacher_train(torch.sigmoid(labels_teacher), targets.long())
         self.f1_teacher_train(torch.sigmoid(labels_teacher), targets.long())
 
-        labels_teacher_hard = (labels_teacher>0.5).long()
+        labels_teacher_hard = (labels_teacher>0.5).float()
         loss_student = self.criterium(labels_student, labels_teacher_hard)
 
         self.acc_student_train(torch.sigmoid(labels_student), targets.long())
@@ -222,7 +222,7 @@ class Deit(pl.LightningModule):
         self.acc_teacher_val(torch.sigmoid(labels_teacher), targets.long())
         self.f1_teacher_val(torch.sigmoid(labels_teacher), targets.long())
 
-        labels_teacher_hard = (labels_teacher>0.5).long()
+        labels_teacher_hard = (labels_teacher>0.5).float()
         loss_student = self.criterium(labels_student, labels_teacher_hard)
 
         self.acc_student_val(torch.sigmoid(labels_student), targets.long())
