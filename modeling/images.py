@@ -3,6 +3,8 @@ import torch.nn as nn
 import pytorch_lightning as pl
 from pytorch_lightning.metrics.classification import Accuracy, F1
 
+import timm
+
 class ResNet18(pl.LightningModule):
     def __init__(self, lr):
         super().__init__()
