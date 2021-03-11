@@ -41,6 +41,7 @@ def train(nb_epochs, train_loader, val_loader, device, model, optimizer, model_p
     torch.save(model, model_path)
     return val_loss, train_loss
 
+
 def evaluate(val_loader, model, device):
     losses = []
     with torch.no_grad(): 
