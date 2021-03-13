@@ -21,6 +21,7 @@ def train(nb_epochs, train_loader, val_loader, device, model, optimizer, model_p
     val_loss, train_loss = [], []
     for e in range(nb_epochs):
         print(f'Number of epochs: {e}')
+        current_loss = []
         for i, data in enumerate(tqdm(train_loader)):
             optimizer.zero_grad()
             ids = data['ids'].to(device, dtype = torch.long)
@@ -29,14 +30,14 @@ def train(nb_epochs, train_loader, val_loader, device, model, optimizer, model_p
             targets = data['targets'].to(device, dtype = torch.float)
             outputs = model(ids, mask, token_type_ids)
             loss = torch.nn.BCEWithLogitsLoss()(outputs, targets)
-            train_loss.append(loss.item())
+            current_loss.append(loss.item())
             loss.backward()
             optimizer.step()
         validation_loss = evaluate(val_loader, model, device)
         print(f'Epoch: {e}, Training Loss:  {loss.item()}')
         print(f'Epoch: {e}, Validation Loss:  {validation_loss.item()}')
-        val_loss.append(validation_loss.item())
-               
+        val_loss.append(validation_loss.item())    
+        train_loss.append(np.mean(current_loss))
     torch.save(model, model_path)
     return val_loss, train_loss
 
