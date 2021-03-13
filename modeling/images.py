@@ -2,6 +2,7 @@ import torch
 import torch.nn as nn
 import pytorch_lightning as pl
 from pytorch_lightning.metrics.classification import Accuracy, F1
+from optimizer.SAM import SAMSGD
 
 import timm
 
@@ -136,7 +137,7 @@ class NFNet(pl.LightningModule):
         self.f1_test.reset()
 
     def configure_optimizers(self):
-        return torch.optim.AdamW(self.parameters(), lr=self.hparams.lr)
+        return SAMSGD(self.parameters(), lr=self.hparams.lr, weight_decay = 1e-5)
 
 class Deit(pl.LightningModule):
     def __init__(self, lr):
