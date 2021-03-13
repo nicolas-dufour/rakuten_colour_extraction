@@ -10,7 +10,7 @@ class Bert_classifier(torch.nn.Module):
         self.drop_out = torch.nn.Dropout(0.3)
         self.dense = torch.nn.Linear(768, nb_colors)
 
-    def forward(self, ids, mask, token_type_ids):
+    def forward(self, ids, mask):
         output_1 = self.input_layer(ids, attention_mask = mask, token_type_ids = None).pooler_output
         output_2 = self.drop_out(output_1)
         output = self.dense(output_2)
@@ -26,7 +26,6 @@ def train(nb_epochs, train_loader, val_loader, device, model, optimizer, model_p
             optimizer.zero_grad()
             ids = data['ids'].to(device, dtype = torch.long)
             mask = data['mask'].to(device, dtype = torch.long)
-            token_type_ids = data['token_type_ids'].to(device, dtype = torch.long)
             targets = data['targets'].to(device, dtype = torch.float)
             outputs = model(ids, mask, token_type_ids)
             loss = torch.nn.BCEWithLogitsLoss()(outputs, targets)
@@ -48,7 +47,6 @@ def evaluate(val_loader, model, device):
         for data in val_loader:
             ids = data['ids'].to(device, dtype = torch.long)
             mask = data['mask'].to(device, dtype = torch.long)
-            token_type_ids = data['token_type_ids'].to(device, dtype = torch.long)
             targets = data['targets'].to(device, dtype = torch.float)
             outputs = model(ids, mask, token_type_ids)
             losses.append(torch.nn.BCEWithLogitsLoss()(outputs, targets).item())

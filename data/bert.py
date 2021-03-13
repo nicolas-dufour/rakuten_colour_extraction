@@ -9,10 +9,9 @@ import random
 from torch.nn.utils.rnn import pad_sequence
 
 class Features:
-  def __init__(self, ids, mask, token_type_ids, target, text_id):
+  def __init__(self, ids, mask, target, text_id):
     self.ids = ids
     self.mask = mask
-    self.token_type_ids = token_type_ids
     self.target = target
     self.text_id = text_id
   
@@ -33,9 +32,9 @@ class Bert_dataset(Dataset):
 
   def load_datasets(self, data_path, X_path, y_path):
     nb_points = 2000
-    X = pd.read_csv(data_path + X_path).iloc[:nb_points]
+    X = pd.read_csv(data_path + X_path)#.iloc[:nb_points]
     _, one_hot_labels, classes = self.labels_obj.load()
-    one_hot_labels = one_hot_labels[:nb_points, :]
+    #one_hot_labels = one_hot_labels[:nb_points, :]
     return X, one_hot_labels, classes
 
   
@@ -58,13 +57,12 @@ class Bert_dataset(Dataset):
     inputs = self.tokenizer.encode_plus(row[0],
                                         None,
                                         add_special_tokens=True,
-                                        return_token_type_ids=True,
+                                        return_token_type_ids=False,
                                         return_attention_mask=True,
                                         return_overflowing_tokens=False,
                                         return_special_tokens_mask=False)
     return Features(ids=inputs['input_ids'],
                     mask= inputs['attention_mask'],
-                    token_type_ids= inputs['token_type_ids'],
                     target=row[1],
                     text_id=row[2])
                     
@@ -72,34 +70,28 @@ class Bert_dataset(Dataset):
   def chunkenize(self, feature):
     ids = feature[0].ids[1:-1]
     mask = feature[0].mask[1:-1]
-    token_type = feature[0].token_type_ids[1:-1]
     starting_point = 0
     while len(ids) > starting_point:
       if starting_point == 0: # first chunk
         t = 's'
         ids_partial = ids[starting_point : starting_point + self.text_size - 2]
         mask_partial = mask[starting_point : starting_point + self.text_size - 2]
-        token_type_partial = token_type[starting_point : starting_point + self.text_size - 2]
         starting_point = self.text_size - 2
       elif starting_point + self.text_size - 2 > len(ids): # last chunk
         t = 'l'
         ids_partial = ids[-(self.text_size - 2):]
         mask_partial = mask[-(self.text_size - 2):]
-        token_type_partial = token_type[-(self.text_size - 2):]
         starting_point += self.text_size - 2
       else: # middle chunk
         t = 'm'
         ids_partial = ids[starting_point - self.overlap_size : starting_point + self.text_size - self.overlap_size - 2]
         mask_partial = mask[starting_point - self.overlap_size : starting_point + self.text_size - self.overlap_size - 2]
-        token_type_partial = token_type[starting_point - self.overlap_size : starting_point + self.text_size - self.overlap_size - 2]
         starting_point = starting_point + self.text_size - self.overlap_size - 2
       if len(ids_partial) < self.text_size:
         ids_partial += [self.pad_token_id]*(self.text_size - len(ids_partial))
         mask_partial += [self.pad_token_id]*(self.text_size - len(mask_partial))
-        token_type_partial += [1]*(self.text_size - len(token_type_partial))
       self.chunks.append({'ids': torch.tensor([self.start_token] + ids_partial + [self.end_token]),
                           'mask': torch.tensor([1] + mask_partial + [1]),
-                          'token_type_ids': torch.tensor([0] + token_type_partial + [0]),
                           'targets': torch.tensor(feature[0].target),
                           'text_id': feature[0].text_id})
 
