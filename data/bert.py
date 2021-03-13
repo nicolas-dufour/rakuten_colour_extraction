@@ -70,7 +70,6 @@ class Bert_dataset(Dataset):
                     
 
   def chunkenize(self, feature):
-    chunks = []
     ids = feature[0].ids[1:-1]
     mask = feature[0].mask[1:-1]
     token_type = feature[0].token_type_ids[1:-1]
@@ -98,12 +97,12 @@ class Bert_dataset(Dataset):
         ids_partial += [self.pad_token_id]*(self.text_size - len(ids_partial))
         mask_partial += [self.pad_token_id]*(self.text_size - len(mask_partial))
         token_type_partial += [1]*(self.text_size - len(token_type_partial))
-      chunks.append({'ids': torch.tensor([self.start_token] + ids_partial + [self.end_token]),
+      self.chunks.append({'ids': torch.tensor([self.start_token] + ids_partial + [self.end_token]),
                           'mask': torch.tensor([1] + mask_partial + [1]),
                           'token_type_ids': torch.tensor([0] + token_type_partial + [0]),
                           'targets': torch.tensor(feature[0].target),
                           'text_id': feature[0].text_id})
-    return chunks
+
         
 
 
@@ -122,7 +121,8 @@ class Bert_dataset(Dataset):
     features_list = np.apply_along_axis(self.encode, 1, df)
     # Step 5 Chunkenize
     features_list = np.expand_dims(features_list, 1)
-    self.chunks = np.apply_along_axis(self.chunkenize, 1, features_list)
+    self.chunks = []
+    np.apply_along_axis(self.chunkenize, 1, features_list)
 
   def get_nb_classes(self):
     return len(self.classes)
