@@ -139,8 +139,8 @@ class Bert_Data:
 
   def split_dataset(self, dataset):
     len = dataset.__len__()
-    train_size = int(len*0.2)
-    val_size = train_size
+    train_size = int(len*0.8)
+    val_size = int(len*0.1)
     test_size = len - train_size - val_size
     return random_split(dataset,[train_size, val_size, test_size])
 
