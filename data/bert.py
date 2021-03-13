@@ -98,7 +98,6 @@ class Bert_dataset(Dataset):
         ids_partial += [self.pad_token_id]*(self.text_size - len(ids_partial))
         mask_partial += [self.pad_token_id]*(self.text_size - len(mask_partial))
         token_type_partial += [1]*(self.text_size - len(token_type_partial))
-        raise ValueError(mask_partial)
       chunks.append({'ids': torch.tensor([self.start_token] + ids_partial + [self.end_token]),
                           'mask': torch.tensor([1] + mask_partial + [1]),
                           'token_type_ids': torch.tensor([0] + token_type_partial + [0]),

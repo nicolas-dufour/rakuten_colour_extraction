@@ -11,7 +11,7 @@ class Bert_classifier(torch.nn.Module):
         self.dense = torch.nn.Linear(768, nb_colors)
 
     def forward(self, ids, mask, token_type_ids):
-        output_1 = self.input_layer(ids, attention_mask = mask, token_type_ids = token_type_ids).pooler_output
+        output_1 = self.input_layer(ids, attention_mask = mask, token_type_ids = None).pooler_output
         output_2 = self.drop_out(output_1)
         output = self.dense(output_2)
         return output
