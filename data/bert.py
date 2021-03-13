@@ -119,7 +119,7 @@ class Bert_dataset(Dataset):
     texts = texts[correct_text]
     one_hot_labels = one_hot_labels[correct_text]
     # Step 4 Tokenize
-    df = pd.DataFrame({'text': texts, 'labels': list(one_hot_labels)})
+    df = pd.DataFrame({'text': texts, 'labels': list(one_hot_labels), 'text_id': correct_text.index})
     features_list = np.apply_along_axis(self.encode, 1, df)
     # Step 5 Chunkenize
     features_list = np.expand_dims(features_list, 1)
