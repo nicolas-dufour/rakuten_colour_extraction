@@ -55,7 +55,6 @@ class Bert_dataset(Dataset):
     return text
 
   def encode(self, row):
-    raise ValueError(row)
     inputs = self.tokenizer.encode_plus(row[0],
                                         None,
                                         add_special_tokens=True,
@@ -67,7 +66,7 @@ class Bert_dataset(Dataset):
                     mask= inputs['attention_mask'],
                     token_type_ids= inputs['token_type_ids'],
                     target=row[1],
-                    text_id=row['index'])
+                    text_id=row[2])
                     
 
   def chunkenize(self, feature):
@@ -103,7 +102,7 @@ class Bert_dataset(Dataset):
                           'mask': torch.tensor([1] + mask_partial + [1]),
                           'token_type_ids': torch.tensor([0] + token_type_partial + [0]),
                           'targets': torch.tensor(feature[0].target),
-                          'text_id': text_id})
+                          'text_id': feature[0].text_id})
     return chunks
         
 
