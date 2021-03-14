@@ -90,14 +90,10 @@ class Bert_dataset(Dataset):
       if len(ids_partial) < self.text_size:
         ids_partial += [self.pad_token_id]*(self.text_size - len(ids_partial))
         mask_partial += [self.pad_token_id]*(self.text_size - len(mask_partial))
-      self.chunks.append({'ids': torch.tensor([self.start_token] + ids_partial + [self.end_token]),
-                          'mask': torch.tensor([1] + mask_partial + [1]),
-                          'targets': torch.tensor(feature[0].target),
-                          'text_id': feature[0].text_id})
-
-        
-
-
+      self.chunks.append((torch.tensor([self.start_token] + ids_partial + [self.end_token], dtype=torch.LockingLogger),
+                          torch.tensor([1] + mask_partial + [1], dtype=torch.long),
+                          torch.tensor(feature[0].target, dtype=torch.long),
+                          feature[0].text_id))
 
   def build(self):
     # Step 1 load
@@ -115,7 +111,7 @@ class Bert_dataset(Dataset):
     features_list = np.expand_dims(features_list, 1)
     self.chunks = []
     np.apply_along_axis(self.chunkenize, 1, features_list)
-
+    del features_list, one_hot_labels, texts, correct_text, text_df
   def get_nb_classes(self):
     return len(self.classes)
 
