@@ -24,9 +24,9 @@ def train(nb_epochs, train_loader, val_loader, device, model, optimizer, model_p
         current_loss = []
         for i, data in enumerate(tqdm(train_loader)):
             optimizer.zero_grad()
-            ids = data['ids'].to(device, dtype = torch.long)
-            mask = data['mask'].to(device, dtype = torch.long)
-            targets = data['targets'].to(device, dtype = torch.float)
+            ids = data['ids'].to(device, dtype = torch.short)
+            mask = data['mask'].to(device, dtype = torch.short)
+            targets = data['targets'].to(device, dtype = torch.short)
             outputs = model(ids, mask)
             loss = torch.nn.BCEWithLogitsLoss()(outputs, targets)
             current_loss.append(loss.item())
