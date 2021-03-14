@@ -6,7 +6,8 @@ import numpy as np
 class Bert_classifier(torch.nn.Module):
     def __init__(self, nb_colors):
         super().__init__()
-        self.input_layer = BertModel.from_pretrained('cl-tohoku/bert-base-japanese')
+        "self.input_layer = BertModel.from_pretrained('cl-tohoku/bert-base-japanese')
+        self.input_layer = BertModel.from_pretrained('cl-tohoku/bert-base-japanese-cha')
         self.drop_out = torch.nn.Dropout(0.3)
         self.dense = torch.nn.Linear(768, nb_colors)
 
@@ -24,9 +25,9 @@ def train(nb_epochs, train_loader, val_loader, device, model, optimizer, model_p
         current_loss = []
         for i, data in enumerate(tqdm(train_loader)):
             optimizer.zero_grad()
-            ids = data['ids'].to(device, dtype = torch.short)
-            mask = data['mask'].to(device, dtype = torch.short)
-            targets = data['targets'].to(device, dtype = torch.short)
+            ids = data['ids'].to(device, dtype = torch.long)
+            mask = data['mask'].to(device, dtype = torch.long)
+            targets = data['targets'].to(device, dtype = torch.long)
             outputs = model(ids, mask)
             loss = torch.nn.BCEWithLogitsLoss()(outputs, targets)
             current_loss.append(loss.item())
