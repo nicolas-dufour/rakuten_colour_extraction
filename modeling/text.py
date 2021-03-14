@@ -6,7 +6,7 @@ import numpy as np
 class Bert_classifier(torch.nn.Module):
     def __init__(self, nb_colors):
         super().__init__()
-        "self.input_layer = BertModel.from_pretrained('cl-tohoku/bert-base-japanese')
+        "self.input_layer = BertModel.from_pretrained('cl-tohoku/bert-base-japanese')"
         self.input_layer = BertModel.from_pretrained('cl-tohoku/bert-base-japanese-cha')
         self.drop_out = torch.nn.Dropout(0.3)
         self.dense = torch.nn.Linear(768, nb_colors)
