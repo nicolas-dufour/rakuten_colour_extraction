@@ -92,7 +92,7 @@ class Bert_dataset(Dataset):
         mask_partial += [self.pad_token_id]*(self.text_size - len(mask_partial))
       self.chunks.append((torch.tensor([self.start_token] + ids_partial + [self.end_token]).long(),
                           torch.tensor([1] + mask_partial + [1]).long(),
-                          torch.tensor(feature[0].target).long(),
+                          torch.tensor(feature[0].target).double(),
                           feature[0].text_id))
 
   def build(self):
