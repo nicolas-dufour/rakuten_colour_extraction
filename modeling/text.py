@@ -4,7 +4,6 @@ from transformers import BertTokenizer, BertModel
 import torch
 from pytorch_lightning.metrics.classification import Accuracy, F1
 from torch import nn
-
 class Bert_classifier(pl.LightningModule):
     def __init__(self, nb_colors, lr):
         super().__init__()
@@ -32,7 +31,7 @@ class Bert_classifier(pl.LightningModule):
     def training_step(self, batch, batch_idx):
         (ids, mask, targets, _) = batch
         labels = self.forward(ids, mask)
-        loss = nn.BCEWithLogitsLoss()(labels, targets)
+        loss = self.criterion(labels, targets.float())
         self.log('train_loss', loss, on_epoch=True,on_step=True)
         self.acc_train(torch.sigmoid(labels), targets)
         self.f1_train(torch.sigmoid(labels), targets)
@@ -46,9 +45,8 @@ class Bert_classifier(pl.LightningModule):
 
     def validation_step(self, batch, batch_idx):
         (ids, mask, targets, _) = batch
-        targets = targets.long()
         labels = self.forward(ids, mask)
-        loss = nn.BCEWithLogitsLoss()(targets, targets)
+        loss = self.criterion(labels, targets.float())
         self.log('valid_loss', loss, on_epoch=True)
         self.acc_val(torch.sigmoid(labels), targets)
         self.f1_val(torch.sigmoid(labels), targets)
@@ -61,7 +59,6 @@ class Bert_classifier(pl.LightningModule):
     
     def test_step(self, batch, batch_idx):
         (ids, mask, targets, _) = batch
-        targets = targets.long()
         labels = self.forward(ids, mask)
         self.acc_test(torch.sigmoid(labels), targets)
         self.f1_test(torch.sigmoid(labels), targets)
