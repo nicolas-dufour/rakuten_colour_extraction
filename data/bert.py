@@ -32,9 +32,9 @@ class Bert_dataset(Dataset):
 
   def load_datasets(self, data_path, X_path, y_path):
     nb_points = 2000
-    X = pd.read_csv(data_path + X_path).iloc[:nb_points]
+    X = pd.read_csv(data_path + X_path)#.iloc[:nb_points]
     _, one_hot_labels, classes = self.labels_obj.load()
-    one_hot_labels = one_hot_labels[:nb_points, :]
+    #one_hot_labels = one_hot_labels[:nb_points, :]
     return X, one_hot_labels, classes
 
   
