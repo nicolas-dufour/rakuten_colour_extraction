@@ -8,3 +8,5 @@ data_files
 data_files
 data_files
 data_files
+lightning_logs
+wandb
