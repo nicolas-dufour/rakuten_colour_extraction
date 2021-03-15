@@ -6,7 +6,7 @@ import numpy as np
 import torch
 from torch.utils.data import random_split
 import random
-from torch.nn.utils.rnn import pad_sequence
+from commun import Loader 
 
 class Features:
   def __init__(self, ids, mask, target, text_id):
@@ -64,17 +64,14 @@ class Bert_dataset(Dataset):
     starting_point = 0
     while len(ids) > starting_point:
       if starting_point == 0: # first chunk
-        t = 's'
         ids_partial = ids[starting_point : starting_point + self.text_size - 2]
         mask_partial = mask[starting_point : starting_point + self.text_size - 2]
         starting_point = self.text_size - 2
       elif starting_point + self.text_size - 2 > len(ids): # last chunk
-        t = 'l'
         ids_partial = ids[-(self.text_size - 2):]
         mask_partial = mask[-(self.text_size - 2):]
         starting_point += self.text_size - 2
       else: # middle chunk
-        t = 'm'
         ids_partial = ids[starting_point - self.overlap_size : starting_point + self.text_size - self.overlap_size - 2]
         mask_partial = mask[starting_point - self.overlap_size : starting_point + self.text_size - self.overlap_size - 2]
         starting_point = starting_point + self.text_size - self.overlap_size - 2
@@ -123,8 +120,8 @@ class Bert_Data:
       df_path_X = self.data_path + self.X_path
       df_path_y = self.data_path + self.y_path
       train_df, val_df, nb_classes = Loader(df_path_X, df_path_y, 42, 'color_tags', 'one_hot').build()
-      train_df = train_df.sample(100)
-      val_df = val_df.sample(100)
+      # train_df = train_df.sample(100)
+      # val_df = val_df.sample(100)
       train_set = Bert_dataset(train_df)
       val_set = Bert_dataset(val_df)
       self.plot_sizes(train_set, val_set)
