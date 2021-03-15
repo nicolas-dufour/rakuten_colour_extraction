@@ -4,6 +4,7 @@ from transformers import BertTokenizer, BertModel
 import torch
 from pytorch_lightning.metrics.classification import Accuracy, F1
 from torch import nn
+
 class Bert_classifier(pl.LightningModule):
     def __init__(self, nb_colors, lr):
         super().__init__()

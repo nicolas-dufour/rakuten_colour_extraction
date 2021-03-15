@@ -16,26 +16,17 @@ class Features:
     self.text_id = text_id
   
 class Bert_dataset(Dataset):
-  def __init__(self, data_path, X_path, y_path):
+  def __init__(self, df):
     self.start_token = 2
     self.end_token = 3
-    self.labels_obj = Labels(data_path + y_path)
     self.tokenizer = BertTokenizer.from_pretrained('cl-tohoku/bert-base-japanese')
     self.pad_token = self.tokenizer.pad_token
     self.pad_token_id = self.tokenizer.pad_token_id
-    self.data_path = data_path
-    self.X_path = X_path
-    self.y_path = y_path
     self.text_size = 200
     self.overlap_size = 50
+    self.df = df
     self.build()
 
-  def load_datasets(self, data_path, X_path, y_path):
-    nb_points = 2000
-    X = pd.read_csv(data_path + X_path)#.iloc[:nb_points]
-    _, one_hot_labels, classes = self.labels_obj.load()
-    #one_hot_labels = one_hot_labels[:nb_points, :]
-    return X, one_hot_labels, classes
 
   
   def preprocess_text(self, row):
@@ -54,7 +45,7 @@ class Bert_dataset(Dataset):
     return text
 
   def encode(self, row):
-    inputs = self.tokenizer.encode_plus(row[0],
+    inputs = self.tokenizer.encode_plus(row[-2],
                                         None,
                                         add_special_tokens=True,
                                         return_token_type_ids=False,
@@ -63,8 +54,8 @@ class Bert_dataset(Dataset):
                                         return_special_tokens_mask=False)
     return Features(ids=inputs['input_ids'],
                     mask= inputs['attention_mask'],
-                    target=row[1],
-                    text_id=row[2])
+                    target=row[-3],
+                    text_id=row[-1])
                     
 
   def chunkenize(self, feature):
@@ -96,24 +87,19 @@ class Bert_dataset(Dataset):
                           feature[0].text_id))
 
   def build(self):
-    # Step 1 load
-    text_df, one_hot_labels, self.classes = self.load_datasets(self.data_path, self.X_path, self.y_path)
-    # Step 2 preprocess
-    texts = text_df.apply(self.preprocess_text, axis=1)
+    # Step 1 preprocess text
+    self.df['text'] = self.df.apply(self.preprocess_text, axis=1)
     # Step 3 remove empty
-    correct_text = texts.notna()
-    texts = texts[correct_text]
-    one_hot_labels = one_hot_labels[correct_text]
+    correct_text = self.df['text'].notna()
+    self.df = self.df[correct_text]
+    self.df['text_id'] = self.df.index
     # Step 4 Tokenize
-    df = pd.DataFrame({'text': texts, 'labels': list(one_hot_labels), 'text_id': correct_text.index})
-    features_list = np.apply_along_axis(self.encode, 1, df)
+    features_list = np.apply_along_axis(self.encode, 1, self.df)
     # Step 5 Chunkenize
     features_list = np.expand_dims(features_list, 1)
     self.chunks = []
     np.apply_along_axis(self.chunkenize, 1, features_list)
-    del features_list, one_hot_labels, texts, correct_text, text_df
-  def get_nb_classes(self):
-    return len(self.classes)
+    del features_list, correct_text, self.df
 
   def __len__(self):
     return len(self.chunks)
@@ -129,28 +115,22 @@ class Bert_Data:
     self.batch_size = batch_size
     self.workers = workers
 
-  def split_dataset(self, dataset):
-    size = dataset.__len__()
-    train_size = int(size*0.8)
-    val_size = int(size*0.1)
-    test_size = size - train_size - val_size
-    return random_split(dataset,[train_size, val_size, test_size])
-
-  def plot_sizes(self, train, val, test):
+  def plot_sizes(self, train, val):
     print('[SYSTEM] Train size', train.__len__())
     print('SYSTEM] Validation size', val.__len__())
-    print('[SYSTEM]Test size', test.__len__())
 
   def build(self):
-      dataset = Bert_dataset(self.data_path, self.X_path, self.y_path)
-      train_dataset, val_dataset, test_dataset = self.split_dataset(dataset)
-      self.plot_sizes(train_dataset, val_dataset, test_dataset)
-      train_loader = DataLoader(train_dataset, batch_size=self.batch_size,
+      df_path_X = self.data_path + self.X_path
+      df_path_y = self.data_path + self.y_path
+      train_df, val_df, nb_classes = Loader(df_path_X, df_path_y, 42, 'color_tags', 'one_hot').build()
+      train_df = train_df.sample(100)
+      val_df = val_df.sample(100)
+      train_set = Bert_dataset(train_df)
+      val_set = Bert_dataset(val_df)
+      self.plot_sizes(train_set, val_set)
+      train_loader = DataLoader(train_set, batch_size=self.batch_size,
                                 shuffle=True, num_workers=self.workers)
 
-      val_loader = DataLoader(val_dataset, batch_size=self.batch_size,
+      val_loader = DataLoader(val_set, batch_size=self.batch_size,
                               shuffle=False, num_workers=self.workers)
-
-      test_loader = DataLoader(test_dataset, batch_size=self.batch_size,
-                               shuffle=False, num_workers=self.workers)
-      return train_loader, val_loader, test_loader, dataset.get_nb_classes()
+      return train_loader, val_loader, nb_classes
