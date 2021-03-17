@@ -6,7 +6,7 @@ import numpy as np
 import torch
 from torch.utils.data import random_split
 import random
-from commun import Loader 
+from data.commun import Loader 
 
 class Features:
   def __init__(self, ids, mask, target, text_id):
