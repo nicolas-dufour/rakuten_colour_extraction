@@ -1,6 +1,6 @@
-from sklearn.model_selection import train_test_split
 from sklearn.preprocessing import MultiLabelBinarizer
 import pandas as pd
+import numpy as np
 import ast
 
 class Loader:
@@ -23,5 +23,9 @@ class Loader:
     df[self.one_hot_column] = list(onehot_labels) 
     nb_classes = len(self.mlb.classes_)
     # Step 3 split
-    df_train, df_val = train_test_split(df, random_state=self.seed)
+    np.random.seed(seed)
+    idx = np.random.permutation(len(df))
+    sep = int(len(df)*0.9)
+    idx_train, idx_val = idx[:sep], idx[sep:]
+    df_train, df_val = df.iloc[idx_train], df.iloc[idx_val]
     return df_train, df_val, nb_classes
