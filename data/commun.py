@@ -23,7 +23,7 @@ class Loader:
     df[self.one_hot_column] = list(onehot_labels) 
     nb_classes = len(self.mlb.classes_)
     # Step 3 split
-    np.random.seed(seed)
+    np.random.seed(self.seed)
     idx = np.random.permutation(len(df))
     sep = int(len(df)*0.9)
     idx_train, idx_val = idx[:sep], idx[sep:]

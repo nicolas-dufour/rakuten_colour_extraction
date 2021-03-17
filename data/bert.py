@@ -19,7 +19,7 @@ class Bert_dataset(Dataset):
   def __init__(self, df):
     self.start_token = 2
     self.end_token = 3
-    self.tokenizer = BertTokenizer.from_pretrained('cl-tohoku/bert-base-japanese')
+    self.tokenizer = BertTokenizer.from_pretrained('cl-tohoku/bert-base-japanese-v2')
     self.pad_token = self.tokenizer.pad_token
     self.pad_token_id = self.tokenizer.pad_token_id
     self.text_size = 200
