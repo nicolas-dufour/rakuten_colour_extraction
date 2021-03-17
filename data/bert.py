@@ -126,8 +126,8 @@ class Bert_Data:
       df_path_X = self.data_path + self.X_path
       df_path_y = self.data_path + self.y_path
       train_df, val_df, nb_classes = Loader(df_path_X, df_path_y, 42, 'color_tags', 'one_hot').build()
-      # train_df = train_df.sample(100)
-      # val_df = val_df.sample(100)
+      train_df = train_df.sample(100)
+      val_df = val_df.sample(100)
       train_set = Bert_dataset(train_df)
       val_set = Bert_dataset(val_df)
       self.plot_sizes(train_set, val_set)
