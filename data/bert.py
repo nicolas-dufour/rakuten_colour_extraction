@@ -62,6 +62,7 @@ class Bert_dataset(Dataset):
     ids = feature[0].ids[1:-1]
     mask = feature[0].mask[1:-1]
     starting_point = 0
+    chunk_id = 0
     while len(ids) > starting_point:
       if starting_point == 0: # first chunk
         ids_partial = ids[starting_point : starting_point + self.text_size - 2]
@@ -81,7 +82,11 @@ class Bert_dataset(Dataset):
       self.chunks.append((torch.tensor([self.start_token] + ids_partial + [self.end_token]).long(),
                           torch.tensor([1] + mask_partial + [1]).long(),
                           torch.tensor(feature[0].target).long(),
-                          feature[0].text_id))
+                          feature[0].text_id,
+                          chunk_id))
+      chunk_id += 1
+    if chunk_id > self.nb_chunks_max:
+      self.nb_chunks_max = chunk_id
 
   def build(self):
     # Step 1 preprocess text
@@ -94,7 +99,8 @@ class Bert_dataset(Dataset):
     features_list = np.apply_along_axis(self.encode, 1, self.df)
     # Step 5 Chunkenize
     features_list = np.expand_dims(features_list, 1)
-    self.chunks = []
+    self.nb_texts = len(features_list)
+    self.chunks, self.nb_chunks_max = [], 0
     np.apply_along_axis(self.chunkenize, 1, features_list)
     del features_list, correct_text, self.df
 

@@ -30,7 +30,7 @@ class Bert_classifier(pl.LightningModule):
         return output
 
     def training_step(self, batch, batch_idx):
-        (ids, mask, targets, _) = batch
+        (ids, mask, targets, _, _) = batch
         labels = self.forward(ids, mask)
         loss = self.criterion(labels, targets.float())
         self.log('train_loss', loss, on_epoch=True,on_step=True)
