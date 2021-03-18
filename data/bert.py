@@ -19,12 +19,12 @@ class Bert_dataset(Dataset):
   def __init__(self, df):
     self.start_token = 2
     self.end_token = 3
-    self.tokenizer = BertTokenizer.from_pretrained('cl-tohoku/bert-base-japanese-v2')
+    self.tokenizer = BertTokenizer.from_pretrained('cl-tohoku/bert-base-japanese')
     self.pad_token = self.tokenizer.pad_token
     self.pad_token_id = self.tokenizer.pad_token_id
     self.text_size = 200
     self.overlap_size = 50
-    self.df = df
+    self.df = df.reset_index(drop=True)
     self.build()
 
 
@@ -91,6 +91,7 @@ class Bert_dataset(Dataset):
   def build(self):
     # Step 1 preprocess text
     self.df['text'] = self.df.apply(self.preprocess_text, axis=1)
+    self.nb_texts = self.df.shape[0]
     # Step 3 remove empty
     correct_text = self.df['text'].notna()
     self.df = self.df[correct_text]
@@ -99,7 +100,6 @@ class Bert_dataset(Dataset):
     features_list = np.apply_along_axis(self.encode, 1, self.df)
     # Step 5 Chunkenize
     features_list = np.expand_dims(features_list, 1)
-    self.nb_texts = len(features_list)
     self.chunks, self.nb_chunks_max = [], 0
     np.apply_along_axis(self.chunkenize, 1, features_list)
     del features_list, correct_text, self.df
@@ -126,8 +126,8 @@ class Bert_Data:
       df_path_X = self.data_path + self.X_path
       df_path_y = self.data_path + self.y_path
       train_df, val_df, nb_classes = Loader(df_path_X, df_path_y, 42, 'color_tags', 'one_hot').build()
-      # train_df = train_df.sample(100)
-      # val_df = val_df.sample(100)
+      #train_df = train_df.sample(100)
+      #val_df = val_df.sample(100)
       train_set = Bert_dataset(train_df)
       val_set = Bert_dataset(val_df)
       self.plot_sizes(train_set, val_set)

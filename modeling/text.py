@@ -9,7 +9,7 @@ class Bert_classifier(pl.LightningModule):
     def __init__(self, nb_colors, lr):
         super().__init__()
         self.lr = lr
-        self.input_layer = BertModel.from_pretrained('cl-tohoku/bert-base-japanese-v2')
+        self.input_layer = BertModel.from_pretrained('cl-tohoku/bert-base-japanese')
         self.drop_out = torch.nn.Dropout(0.3)
         self.dense = torch.nn.Linear(768, nb_colors)
         self.criterion = nn.BCEWithLogitsLoss()
