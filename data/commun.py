@@ -2,6 +2,8 @@ from sklearn.preprocessing import MultiLabelBinarizer
 import pandas as pd
 import numpy as np
 import ast
+import h5py
+from tqdm.notebook import tqdm
 
 class Loader:
   def __init__(self, df_path_X, df_path_y, seed, label_column, one_hot_column):
