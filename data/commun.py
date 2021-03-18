@@ -37,10 +37,12 @@ def extract_and_save_bert(dataloader, embedding_size, model, device, filename):
   table_size = (dataloader.dataset.nb_texts, dataloader.dataset.nb_chunks_max, embedding_size)
   with h5py.File(filename, "w") as f:
         embedding_dataset = f.create_dataset("embedding", (table_size), dtype='f')
-        for ids, mask, _, text_id, chunk_id in tqdm(dataloader):
+        for idx, (ids, mask, _, text_id, chunk_id) in enumerate(tqdm(dataloader)):
             ids = ids.to(device)
             mask = mask.to(device)
             embeddings = model.input_layer(ids, attention_mask = mask, token_type_ids = None).pooler_output.detach().cpu().numpy()
             for t_id, c_id, emb in zip(text_id.numpy(), chunk_id.numpy(), embeddings):
               embedding_dataset[t_id, c_id] = emb
+            if idx % 100 == 99:
+                f.flush()
         f.close()
