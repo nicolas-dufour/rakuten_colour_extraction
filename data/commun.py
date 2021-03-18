@@ -35,6 +35,7 @@ class Loader:
 
 def extract_and_save_bert(dataloader, embedding_size, model, device, filename):
   table_size = (dataloader.dataset.nb_texts, dataloader.dataset.nb_chunks_max, embedding_size)
+  raise ValueError(dataloader.dataset.nb_chunks_max)
   with h5py.File(filename, "w") as f:
         embedding_dataset = f.create_dataset("embedding", (table_size), dtype='f')
         for idx, (ids, mask, _, text_id, chunk_id) in enumerate(tqdm(dataloader)):
@@ -45,4 +46,4 @@ def extract_and_save_bert(dataloader, embedding_size, model, device, filename):
               embedding_dataset[t_id, c_id] = emb
             if idx % 100 == 99:
                 f.flush()
-        f.close()
+        f.close()   
