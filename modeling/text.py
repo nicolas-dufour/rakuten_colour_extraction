@@ -45,7 +45,7 @@ class Bert_classifier(pl.LightningModule):
         self.f1_train.reset()
 
     def validation_step(self, batch, batch_idx):
-        (ids, mask, targets, _) = batch
+        (ids, mask, targets, _, _) = batch
         labels = self.forward(ids, mask)
         loss = self.criterion(labels, targets.float())
         self.log('valid_loss', loss, on_epoch=True)
