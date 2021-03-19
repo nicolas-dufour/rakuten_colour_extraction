@@ -4,7 +4,7 @@ import numpy as np
 import ast
 import h5py
 from tqdm.notebook import tqdm
-from bert import Bert_dataset, Bert_dataset_Test
+from data.bert import Bert_dataset, Bert_dataset_Test
 from torch.utils.data import Dataset, DataLoader
 import torch
 
