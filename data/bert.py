@@ -19,15 +19,13 @@ class Bert_dataset(Dataset):
   def __init__(self, df):
     self.start_token = 2
     self.end_token = 3
-    self.tokenizer = BertTokenizer.from_pretrained('cl-tohoku/bert-base-japanese')
+    self.tokenizer = BertTokenizer.from_pretrained('cl-tohoku/bert-base-japanese-v2')
     self.pad_token = self.tokenizer.pad_token
     self.pad_token_id = self.tokenizer.pad_token_id
     self.text_size = 200
     self.overlap_size = 50
     self.df = df.reset_index(drop=True)
     self.build()
-
-
   
   def preprocess_text(self, row):
     description = row['item_caption']
@@ -137,3 +135,99 @@ class Bert_Data:
       val_loader = DataLoader(val_set, batch_size=self.batch_size,
                               shuffle=False, num_workers=self.workers)
       return train_loader, val_loader, nb_classes
+
+
+class Bert_dataset_Test(Dataset):
+  def __init__(self, df_path):
+    self.df = pd.read_csv(df_path, index_col=0)
+    self.start_token = 2
+    self.end_token = 3
+    self.tokenizer = BertTokenizer.from_pretrained('cl-tohoku/bert-base-japanese-v2')
+    self.pad_token = self.tokenizer.pad_token
+    self.pad_token_id = self.tokenizer.pad_token_id
+    self.text_size = 200
+    self.overlap_size = 50
+    self.df = self.df.reset_index(drop=True)
+    self.build()
+
+  def preprocess_text(self, row):
+    description = row['item_caption']
+    title = row['item_name']
+    if type(description) == str:
+      if type(title) == str:
+        text = f"<title> {title}. <description> {description}" 
+      else:
+        text = f"<title> <empty>. <description> {description}"
+    else:
+      if type(title) == str:
+        text = f"<title> {title}. <description> <empty>"
+      else:
+        print('[SYSTEM] empty text')
+        text = np.nan
+    return text
+  
+  def encode(self, row):
+    raise ValueError(row)
+    inputs = self.tokenizer.encode_plus(row[-2],
+                                        None,
+                                        add_special_tokens=True,
+                                        return_token_type_ids=False,
+                                        return_attention_mask=True,
+                                        return_overflowing_tokens=False,
+                                        return_special_tokens_mask=False)
+    return Features(ids=inputs['input_ids'],
+                    mask= inputs['attention_mask'],
+                    target=row[-3],
+                    text_id=row[-1])
+                    
+  
+  def chunkenize(self, feature):
+    raise ValueError(feature)
+    ids = feature[0].ids[1:-1]
+    mask = feature[0].mask[1:-1]
+    starting_point = 0
+    chunk_id = 0
+    while len(ids) > starting_point:
+      if starting_point == 0: # first chunk
+        ids_partial = ids[starting_point : starting_point + self.text_size - 2]
+        mask_partial = mask[starting_point : starting_point + self.text_size - 2]
+        starting_point = self.text_size - 2
+      elif starting_point + self.text_size - 2 > len(ids): # last chunk
+        ids_partial = ids[-(self.text_size - 2):]
+        mask_partial = mask[-(self.text_size - 2):]
+        starting_point += self.text_size - 2
+      else: # middle chunk
+        ids_partial = ids[starting_point - self.overlap_size : starting_point + self.text_size - self.overlap_size - 2]
+        mask_partial = mask[starting_point - self.overlap_size : starting_point + self.text_size - self.overlap_size - 2]
+        starting_point = starting_point + self.text_size - self.overlap_size - 2
+      if len(ids_partial) < self.text_size:
+        ids_partial += [self.pad_token_id]*(self.text_size - len(ids_partial))
+        mask_partial += [self.pad_token_id]*(self.text_size - len(mask_partial))
+      self.chunks.append((torch.tensor([self.start_token] + ids_partial + [self.end_token]).long(),
+                          torch.tensor([1] + mask_partial + [1]).long(),
+                          None,
+                          feature[0].text_id,
+                          chunk_id))
+      chunk_id += 1
+    if chunk_id > self.nb_chunks_max:
+      self.nb_chunks_max = chunk_id
+
+  def build(self):
+    # Step 1 preprocess text
+    self.df['text'] = self.df.apply(self.preprocess_text, axis=1)
+    self.nb_texts = self.df.shape[0]
+    # Step 3 remove empty
+    self.df = self.df[self.df['text'].notna()]
+    self.df['text_id'] = self.df.index
+    # Step 4 Tokenize
+    features_list = self.df.apply(self.encode, axis=1)
+    # Step 5 Chunkenize
+    self.chunks, self.nb_chunks_max = [], 0
+    features_list.apply(self.chunketize, axis=1)
+    del features_list, correct_text, self.df
+
+  def __len__(self):
+    return len(self.chunks)
+
+  def __getitem__(self, idx):
+    return self.chunks[idx]
