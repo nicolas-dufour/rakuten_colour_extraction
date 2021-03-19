@@ -27,13 +27,14 @@ class Loader:
     onehot_labels = self.mlb.fit_transform(df[self.label_column])
     df[self.one_hot_column] = list(onehot_labels) 
     nb_classes = len(self.mlb.classes_)
+    classes_names = self.mlb.classes_
     # Step 3 split
     np.random.seed(self.seed)
     idx = np.random.permutation(len(df))
     sep = int(len(df)*0.9)
     idx_train, idx_val = idx[:sep], idx[sep:]
     df_train, df_val = df.iloc[idx_train], df.iloc[idx_val]
-    return df_train, df_val, nb_classes
+    return df_train, df_val, nb_classes, classes_names
 
 # def save_chunks_bert(dataloader, filename, model, device):
 #   model.eval()
